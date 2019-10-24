@@ -1,18 +1,18 @@
 const Koa = require('koa')
 const Router = require('koa-router')
+const bodyparser = require('koa-bodyparser')
 
 const app = new Koa()
 
-let router = new Router()
+//bodyparser需要提前调用
+app.use(bodyparser())
 
+let router = new Router()
 router.get('/',async(ctx,next) =>{
-  let url = ctx.url
-  let method = ctx.method
-  if(url === '/' && method === 'GET' ) {
-    let cookie = ctx.cookies.get('uid')
+    let cookie = ctx.cookies.get('username')
     if(!cookie) {
       let html = `
-      <a href="/login">请登陆</a>
+      <a href="/POST">请注册</a>
       `
       ctx.body = html
     }else {
@@ -25,19 +25,29 @@ router.get('/',async(ctx,next) =>{
       `
       ctx.body = html
     }
-  }
+})
+
+router.get('/POST',async (ctx)=>{
+  ctx.body = `
+  <h1>输入信息完成注册</h1>
+  <form method="POST" action="/login">
+  <input name="username" />
+  <input name="password" />
+  <button type="submit">注册</button>
+  <form>
+  `
 })
 
 let uid = 1
 let login = new Router()
-login.get('/',async (ctx,next) => {
-  ctx.cookies.set('uid',uid++)
+login.post('/',async (ctx,next) => {
+  ctx.cookies.set('username',ctx.request.body.username)
   ctx.redirect('/')
 })
 
 let exit = new Router()
 exit.get('/',async(ctx,next)=>{
-  ctx.cookies.set('uid',null) 
+  ctx.cookies.set('username',null) 
   ctx.redirect('/')
 })
 
